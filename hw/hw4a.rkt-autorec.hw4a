@@ -1,0 +1,40 @@
+#lang htdp/bsl
+
+(require 2htdp/image)
+
+(require 2htdp/universe)
+
+
+; 1 ---------------------------------------------------------------------------
+
+; A Letters is one of
+; - '()
+; - (cons String Letters)
+; INTERPRETATION: represents the letters in a Spelling Bee
+; with one of the letters being the required letter
+
+; Letters Examples
+(define L0 '())
+(define L1 (cons "A" L0))
+(define L2 (cons "B" L1))
+(define L3 (cons "C" L2))
+
+; Letters Template
+; letters-temp : Letters -> ?
+(define (letters-temp letters)
+  (cond [(empty? letters) ...]
+        [(cons? letters) (... (letters-temp (rest letters)) ...)]))
+
+; 2 ---------------------------------------------------------------------------
+
+; letters->Image : Letters -> Image
+; displays the Letters
+
+
+(define (letters->image letters)
+  (cond [(empty? letters) ...]
+        [(cons? letters) (... (letters-temp (rest letters)) ...)]))
+
+
+
+
