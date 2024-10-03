@@ -11,28 +11,38 @@
 
 ; 1 ---------------------------------------------------------------
 
-; A Block is a (make-block Number Posn String)
-(define-struct block [pos count color])
-; and represents a block on a QBertBoard where
-; - pos is a block's x and y position (with 0,0 at the bottom left)
-; - count is the current count of the block
-; - color is the color of the block
+; *****
+; A Coord is a (make-coord Integer Integer)
+(define-struct coord [row col])
+; and represents a coordinate on a QBertBoard
+
+; Coord Template
+; coord-temp : Coord -> ?
+(define (coord-temp coord)
+  (... (coord-row coord)
+       (coord-col coord) ...))
+
+; Coord Examples
+(define COORD-0-0 (make-coord 0 0)) ; top of pyramid
+(define COORD-2-1 (make-coord 2 1)) ; third row, second col
+
+; *****
+; A Block is a Natural
+; and represents the count of a block on a QBertBoard
 
 ; Block Template
 ; block-temp : Block -> ?
 (define (block-temp block)
-  (... (posn-temp (block-pos block))
-       (block-count block)  
-       (block-color block) ...))
+  ...)
 
 ; Block Examples
-(define BLOCK0 (make-block (make-posn 0 0) 0 "red"))
-(define BLOCK1 (make-block (make-posn 1 0) 1 "orange"))
+(define BLOCK0 0) ; a block that has been cleared
+(define BLOCK1 1) ; a block that needs one more jump
 
-
+; *****
 ; A LOB is one of
-; '()
-; (cons Block LOB)
+; - '()
+; - (cons Block LOB)
 ; and represents a list of blocks
 
 ; LOB Template
@@ -41,48 +51,47 @@
   (cond
     [(empty? lob) ...]
     [(cons? lob)
-     (... (first (block-temp lob))
-          (lob-temp (rest lob)) ...)]))
+     (... (first lob))
+          (lob-temp (rest lob)) ...]))
 
 ; LOB Examples
 (define LOB0 '())
 (define LOB1 (cons BLOCK1 LOB0))
 
-
-; A QBertBoard is a (make-qbertboard Number Number LOB)
-(define-struct qbertboard [level size lob])
-; and represents the playing field of a particular game level where
-; - level is the is the level number
-; - size is the size of the board
-; - lob is a list of the blocks of the board
+; *****
+; A QBertBoard is a (list (list Block))
+; and represents a list of list of blocks
+; (playing field of a particular game level)
 
 ; QBertBoard Template
 ; qbertboard-temp : QbertBoard -> ?
 (define (qbertboard-temp qbertboard)
-  (... (qbertboard-level qbertboard)
-       (qbertboard-size qbertboard)
-       (lob-temp (qbertboard-lob qbertboard)) ...))
+  (cond
+    [(empty? qbertboard) ...]
+    [(cons? qbertboard)
+     (... (lob-temp (first qbertboard))
+          (qbertboard-temp (rest qbertboard)) ...)]))
 
 ; QBertBoard Examples
-(define QB1 (make-qbertboard 1 1 LOB0))
-(define QB2 (make-qbertboard 2 5 LOB0))
+(define QB1 (make-qbertboard (list (list 1)
+                                   (list 1 1)
+                                   (list 1 1 1)))) ; a 3x3 board for level 1
+(define QB2 (make-qbertboard (list (list 2)
+                                   (list 2 2)
+                                   (list 2 2 2)
+                                   (list 2 2 2 2))) ; a 4x4 board for level 2
 
 
-
-
-
-
-
+; *****
 ; make-board : Number Number -> QBertBoard
 ; constructs a QBertBoard containing the initial state of that level
 ; takes a level number and a board size
-(check-expect (make-board 1 1) QB1)
-(check-expect (make-board 2 5) QB2)
+(check-expect (make-board 1 3) QB1)
+(check-expect (make-board 2 4) QB2)
 
 (define (make-board level size)
-  (make-qbertboard level
-                   size
-                   ))
+  
+                   
 
 ; 2 ---------------------------------------------------------------
 
