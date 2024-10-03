@@ -51,8 +51,8 @@
   (cond
     [(empty? lob) ...]
     [(cons? lob)
-     (... (first lob))
-          (lob-temp (rest lob)) ...]))
+     (... (first lob)
+          (lob-temp (rest lob)) ...)]))
 
 ; LOB Examples
 (define LOB0 '())
@@ -73,13 +73,13 @@
           (qbertboard-temp (rest qbertboard)) ...)]))
 
 ; QBertBoard Examples
-(define QB1 (make-qbertboard (list (list 1)
-                                   (list 1 1)
-                                   (list 1 1 1)))) ; a 3x3 board for level 1
-(define QB2 (make-qbertboard (list (list 2)
-                                   (list 2 2)
-                                   (list 2 2 2)
-                                   (list 2 2 2 2))) ; a 4x4 board for level 2
+(define QB1 (list (list 1)
+                  (list 1 1)
+                  (list 1 1 1))) ; a 3x3 board for level 1
+(define QB2 (list (list 2)
+                  (list 2 2)
+                  (list 2 2 2)
+                  (list 2 2 2 2))) ; a 4x4 board for level 2
 
 
 ; *****
@@ -89,16 +89,29 @@
 (check-expect (make-board 1 3) QB1)
 (check-expect (make-board 2 4) QB2)
 
+
+
 (define (make-board level size)
-  
+  (local [; count : X -> Number
+          ; gives the starting count of each block
+          (define (count x)
+            level)
+          ; create-row : Number -> [List-of Number]
+          ; creates a row of blocks with a count of level
+          (define (create-row row)
+            (build-list (add1 row) count))]
+    
+    (build-list size create-row) ))
+
                    
 
 ; 2 ---------------------------------------------------------------
 
-; A QBertLevel is a (make-qbertlevel Posn Number QBertBoard)
-(define-struct qbertlevel[pos steps board])
+; A QBertLevel is a (make-qbertlevel Number Coord Number QBertBoard)
+(define-struct qbertlevel[level coord steps board])
 ; and represents all the information in a given level of the game where
-; - pos is Qbert's x and y position (with 0,0 at the bottom left)
+; - level is the current level
+; - coord is Qbert's x and y position (with 0,0 at the bottom left)
 ; - steps is the number of steps QBert has taken
 ; - board is the current board
 
@@ -160,7 +173,7 @@
 ; determines whether the count of each and every block on a QBertBoard is 0
 (check-expect (all-blocks-zero? 0) 0)
 
-(define (all-blocks-zero? qbertboard)
+#;(define (all-blocks-zero? qbertboard)
   (local [
           (define lob
             (qbertboard-lob qbertboard))]
