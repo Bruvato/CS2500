@@ -1,4 +1,4 @@
-#lang htdp/bsl
+#lang htdp/isl+
 
 ; A ListOfNumbers (LON) is one of
 ; - '()
@@ -242,6 +242,12 @@
         [(cons? lon)
          (append (powerlist (rest lon))
                  (add-to-each (first lon) (powerlist (rest lon))))]))
+
+#;(define (powerlist lon)
+  (cond [(empty? lon) (list '())]
+        [(cons? lon) (... (first lon)
+                          (powerlist (rest lon)) ...)]))
+  
 
 ; add-to-each : Number LOLON -> LOLON
 ; adds the given number to the front of each list in the given LOLON

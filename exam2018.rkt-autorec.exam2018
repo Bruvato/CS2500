@@ -1,0 +1,241 @@
+#lang htdp/isl+
+
+; 1 ===============================================
+
+
+; An LOC (list of campaign contributions) is
+; one of:
+; - empty
+; - (cons Contrib LOC)
+(define-struct contrib [donor amount])
+; A Contrib (campaign contribution) is one of:
+; - Number
+; - (make-contrib String Number)
+; interpretation A simple number represents an
+; anonymous contribution, while a
+; (make-contrib d amt) represents a
+; contribution of amt dollars from donor d.
+
+; Contrib Template
+(define (contrib-temp contrib)
+  (cond [(number? contrib) ...]
+        [(contrib? contrib) (... (contrib-donor contrib) ... (contrib-amount contrib) ...)]))
+
+; Contrib Examples
+(define c1 25) ; anon of $25
+(define c2 100) ; anon of $100
+(define c3 (make-contrib "Ray" 2500)) ; $2500 from Ray
+(define c4 (make-contrib "Bob" 3000)) ; $3000 from Bob
+(define c5 50) ; anon of $50
+(define c6 (make-contrib "Bro" 2700)) ; $2700 from Bro
+
+; LOC Template
+(define (loc-temp loc)
+  (cond [(empty? loc) ...]
+        [(cons? loc) (... (contrib-temp (first loc)) ... (loca-temp (rest loc)) ...)]))
+
+; LOC Examples
+(define legal (list c1 c3 c5 c6))
+(define illegal (list c2 c4))
+(define loc1 (list c1 c2 c3 c4 c5 c6))
+
+; any-bad-contrib? : LOC -> Boolean
+; checks if any of the contributions on a given LOC are illegal ones
+(check-expect (any-bad-contrib? legal) #f)
+(check-expect (any-bad-contrib? illegal) #t)
+(check-expect (any-bad-contrib? loc1) #t)
+
+(define (any-bad-contrib? loc)
+  (cond [(empty? loc) #f]
+        [(cons? loc) (or (bad-contrib? (first loc))
+                         (any-bad-contrib? (rest loc)))]))
+
+; bad-contrib? : Contrib -> Boolean
+; checks if a given Contrib is illagal
+(check-expect (bad-contrib? c1) #f)
+(check-expect (bad-contrib? c2) #t)
+(check-expect (bad-contrib? c3) #f)
+(check-expect (bad-contrib? c4) #t)
+
+(define (bad-contrib? contrib)
+  (cond [(number? contrib) (> contrib 50)]
+        [(contrib? contrib) (> (contrib-amount contrib) 2700)]))
+
+; 2 =======================================
+
+(define gd (list (make-contrib "a" 1000)
+                 (make-contrib "b" 1000)
+                 (make-contrib "a" 1000)
+                 (make-contrib "b" 1000)))
+
+(define bd1 (list (make-contrib "a" 1000)
+                  (make-contrib "b" 1000)
+                  (make-contrib "a" 1000)
+                  (make-contrib "a" 1000)))
+
+(define bd2 (list (make-contrib "a" 1000)
+                  (make-contrib "b" 1000)
+                  (make-contrib "b" 1000)
+                  (make-contrib "b" 1000)))
+
+(define bd3 (list (make-contrib "a" 1000)
+                  (make-contrib "b" 1000)
+                  (make-contrib "a" 1000)
+                  (make-contrib "b" 2000)
+                  (make-contrib "a" 1000)))
+                        
+
+; any-bad-donors? : LOC -> Boolean
+; checks if the total contributions of any of the named donors on the list exceed $2700
+(check-expect (any-bad-donors? gd) #f)
+(check-expect (any-bad-donors? bd1) #t)
+(check-expect (any-bad-donors? bd2) #t)
+(check-expect (any-bad-donors? bd3) #t)
+
+#|
+(define (any-bad-donors? loc)
+  (cond
+    [(empty? loc) #f]
+    [(cons? loc) (or (> (get-contribs (first loc) loc) 2700)
+                     (any-bad-donors? (rest loc)))]))
+
+(define (get-contribs c loc)
+  (cond [(number? c) 0]
+        [(contrib? c) (foldr + 0
+                             (map contrib-amount (filter (λ(x) (names-match? x (contrib-donor c))) loc)))]))
+(define (names-match? c name)
+  (cond [(number? c) #f]
+        [(contrib? c) ...]))
+|#
+              
+
+(define (any-bad-donors? loc)
+  (local [(define new-loc (filter contrib? loc))]
+    (foldr (λ(contrib acc) (or (> (donor-total (contrib-donor contrib) new-loc) 2700)
+                               acc)) #f new-loc)))
+
+(define (donor-total donor loc)
+  (foldr (λ(contrib acc) (if (string=? donor (contrib-donor contrib))
+                             (+ (contrib-amount contrib) acc)
+                             acc)) 0 loc))
+
+
+(check-expect (donor-total "a" gd) 2000)
+(check-expect (donor-total "b" bd3) 3000)
+
+
+; 3 ======================================================================
+
+; remove-duplicates : [List-of X] [X X -> Boolean] -> [List-of X]
+; remove all duplicate elements from the input list
+(check-expect (remove-duplicates (list 1 2 3 2 4 3 2) =) (list 1 2 3 4))
+
+#;(define (remove-duplicates l eq?)
+  (reverse (foldl (λ(elem acc) (if (contains? acc elem eq?)
+                                   acc
+                                   (cons elem acc))) '() l)))
+
+(define (remove-duplicates l eq?)
+  (foldr (λ(x others) (cons x (remove-x x (remove-duplicates others eq?) eq?)) '() l)))
+  #;(cond
+    [(empty? l) '()]
+    [(cons? l) (cons (first l)
+                     (remove-x (first l) (remove-duplicates (rest l) eq?) eq?))]))
+
+(define (remove-x x lox eq?)
+  (filter (λ(x) (not (eq? x ...)))))
+
+; contains? : {X} [List-of X] X [X X -> Boolean] -> Boolean
+;
+(check-expect (contains? (list 1 2 3) 2 =) #t)
+(check-expect (contains? (list 1 2 3) 0 =) #f)
+
+(define (contains? l x eq?)
+  (foldr (λ(elem acc) (or (eq? elem x) acc)) #f l))
+
+
+; 4 =====================================================
+
+; 
+(define (my-map f l)
+  (foldr (λ(x acc) (cons (f x) acc) ) '() l))
+
+(my-map add1 (list 0 1 2 3))
+
+
+; 5 ======================================================
+
+(define-struct film [title runtime])
+; A Film is a (make-film String Number)
+; It represents a film's name and runtime in minutes
+
+; long-films : [List-of Film] -> [List-of String]
+; The titles of films longer than 2 hours
+#;(define (long-films lof)
+    (cond [(empty? lof) empty]
+          [(cons? lof)
+           (if (long-film? (first lof))
+               (cons (film-title (first lof)) (long-films (rest lof)))
+               (long-films (rest lof)))]))
+(define (long-films lof)
+  (foldr (λ(film acc) (if (long-film? film)
+                          (cons (film-title film) acc)
+                          acc))'() lof))
+
+(check-expect (long-films empty) empty)
+(check-expect (long-films (list (make-film "LotR" 178)
+                                (make-film "Casablanca" 102)))
+              (list "LotR"))
+
+; long-film? : Film -> Boolean
+; Is this film longer than 2 hours?
+(define (long-film? film)
+  (> (film-runtime film) 120))
+
+(check-expect (long-film? (make-film "LotR" 178)) #true)
+(check-expect (long-film? (make-film "Casablanca" 102)) #false)
+
+
+
+; Snake = NESegs
+; NESegs (non-empty segments) is the list of segments of the
+; snake's body; first element in the list is the head
+; An NESegs (non-empty segments) is one of:
+; (cons Posn empty)
+; (cons Posn NESegs)
+
+; head-1st-quadrant : [List-of Snake] -> [List-of Snake]
+; Return only the snakes whose heads lie in the first quadrant
+#;(define (head-1st-quadrant losnk)
+    (cond [(empty? losnk) empty]
+          [(cons? losnk)
+           (if (first-quadrant? (first (first losnk)))
+               (cons (first losnk) (head-1st-quadrant (rest losnk)))
+               (head-1st-quadrant (rest losnk)))]))
+(define (head-1st-quadrant losnk)
+  (filter (λ(snk) (first-quadrant? (first snk))) losnk))
+
+(check-expect (head-1st-quadrant empty) empty)
+(check-expect (head-1st-quadrant
+               (list (list (make-posn 1 1) (make-posn 0 1))
+                     (list (make-posn 0 1) (make-posn 1 1))))
+              (list (list (make-posn 1 1) (make-posn 0 1))))
+
+; first-quadrant? : Posn -> Boolean
+; Is this posn in the first quadrant?
+(define (first-quadrant? p)
+  (and (> (posn-x p) 0) (> (posn-y p) 0)))
+
+(check-expect (first-quadrant? (make-posn 1 1)) #true)
+(check-expect (first-quadrant? (make-posn 1 0)) #false)
+(check-expect (first-quadrant? (make-posn 0 1)) #false)
+
+  
+
+     
+     
+
+
+
+
+

@@ -1,0 +1,48 @@
+#lang htdp/isl+
+
+; A LON
+; - '()
+; - (cons Number LON)
+
+; A LOLON
+; - '()
+; - (cons LON LOLON)
+
+; all-contained-in? : lolon1 lolon2
+;
+(check-expect (all-contained-in? '() '()) #t)
+(check-expect (all-contained-in? (list '()) (list '())) #t)
+(check-expect (all-contained-in? (list '(1)) (list '(1))) #t)
+(check-expect (all-contained-in? (list '(1)) (list '(1) '(2))) #t)
+(check-expect (all-contained-in? (list '(1 2) '(3 4)) (list '(0 0) '(3 4) '(1 2))) #t)
+(check-expect (all-contained-in? (list '(1 2) '(3 4)) (list '(0 0) '(1 2))) #f)
+
+(define (all-contained-in? lolon1 lolon2)
+  (andmap (λ(lon) (lon-contained-in? lon lolon2)) lolon1))
+
+(define (lon-contained-in? lon lolon)
+  (ormap (λ(inner-lon) (equal-lon? lon inner-lon)) lolon))
+
+(define (equal-lon? lon1 lon2)
+  (and (subset? lon1 lon2)
+       (subset? lon2 lon1)))
+
+(define (subset? lon1 lon2)
+  (andmap (λ(x) (element-of? x lon2)) lon1))
+
+(define (element-of? x lon)
+  (ormap (λ(elem) (= elem x)) lon))
+
+; ==================================================
+
+(define (append-from-fold l1 l2)
+  (foldr (λ(x acc) (cons x acc)) l2 l1))
+
+(append-from-fold '(1 2 3) '(4 5 6))
+
+
+
+
+
+
+
