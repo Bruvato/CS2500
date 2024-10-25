@@ -4,7 +4,7 @@
 #;(define (smallest grid lt?)
     (largest grid (λ(x y) (not (it? x y)))))
 
-; -----
+; ----- chooser ------
 
 ; A Chooser is a {X} [X X -> X]
 
