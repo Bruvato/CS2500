@@ -183,29 +183,29 @@
   (cond [(number? exp) exp]
         [(e-op? exp) (local [(define op (e-op-op exp))
                              (define exp1 (simplify (e-op-left exp)))
-                             (define exp2 (simplify (e-op-right exp)))
-                             (define helper
-                               (cond [(or (symbol=? op '+) (symbol=? op '-))
-                                      (cond [(and (number? exp1) (zero? exp1)) exp2]
-                                            [(and (number? exp2) (zero? exp2)) exp1]
-                                            [else (make-e-op op exp1 exp2)])]
-                                     [(or (symbol=? op '*) (symbol=? op '/))
-                                      (cond [(and (number? exp1) (= exp1 1)) exp2]
-                                            [(and (number? exp2) (= exp2 1)) exp1]
-                                            [else (make-e-op op exp1 exp2)])]))]
-                       helper)]
+                             (define exp2 (simplify (e-op-right exp)))]
+                       (cond [(and (symbol=? op '+) (number? exp2) (zero? exp2)) exp1]
+                             [(and (symbol=? op '+) (number? exp1) (zero? exp1)) exp2]
+                             [(and (symbol=? op '-) (number? exp2) (zero? exp2)) exp1]
+                             [(and (symbol=? op '*) (number? exp2) (= exp2 1)) exp1]
+                             [(and (symbol=? op '*) (number? exp1) (= exp1 1)) exp2]
+                             [(and (symbol=? op '/) (number? exp2) (= exp2 1)) exp1]
+                             [else (make-e-op op exp1 exp2)]))] 
         [(e-in? exp) exp]))
 
 (check-expect (simplify E0) E0)
 (check-expect (simplify (make-e-in)) (make-e-in))
+
 (check-expect (simplify (make-e-op '+ E0 0)) E0)
 (check-expect (simplify (make-e-op '+ 0 E0)) E0)
-(check-expect (simplify (make-e-op '- 0 E0)) E0)
+
 (check-expect (simplify (make-e-op '- E0 0)) E0)
+
 (check-expect (simplify (make-e-op '* 1 E0)) E0)
 (check-expect (simplify (make-e-op '* E0 1)) E0)
-(check-expect (simplify (make-e-op '/ 1 E0)) E0)
+
 (check-expect (simplify (make-e-op '/ E0 1)) E0)
+
 (check-expect (simplify (make-e-op '+ E1 0)) E1)
 (check-expect (simplify (make-e-op '+ E2 0)) E2)
 (check-expect (simplify (make-e-op '+ (make-e-op '+ 0 3) E0)) (make-e-op '+ 3 3))
