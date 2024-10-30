@@ -116,7 +116,7 @@
 (check-error (parse '+))
 (check-error (parse '(+)))
 
-; parse-los : [List-of S-Exp] > Exp
+; parse-los : [List-of S-Exp] -> Exp
 ; parses a given List-of S-Exp to produce a Exp
 (define (parse-los los)
   (cond
@@ -138,7 +138,7 @@
 
 ; 2 ---------------------------------------------
 
-; eval-op : {X} Op -> [X X -> X]
+; eval-op : Op -> [Number Number -> Number]
 ; gives the corresponding operation to a given Op
 (define (eval-op op)
   (cond
