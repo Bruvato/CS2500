@@ -20,8 +20,6 @@
             (cond [(symbol=? s e) #t]
                   [(member s already-visited) #f]
                   [else (ormap (λ(next) (path?/acc g next e (cons s already-visited))) (neighbors-of s g))]) ; (3): (cons s already-visited)
-
-
             )]
     (reverse (path?/acc g s e '())))) ; (2): '()
 
